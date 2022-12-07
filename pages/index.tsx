@@ -1,17 +1,48 @@
 import { MouseEvent, useState } from "react";
+import axios from "axios";
+import { Triangle } from "react-loader-spinner";
+import Image from "next/image";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [size, setSize] = useState("small");
-
-  console.log(prompt, size);
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageSize, setImageSize] = useState("");
 
   const onClear = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    setImageUrl("");
+    setImageSize("");
+    setPrompt("");
+    setSize("small");
   };
 
-  const onGenerate = (e: MouseEvent<HTMLButtonElement>) => {
+  const onGenerate = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    if (!prompt || !size) return;
+
+    setImageUrl("");
+    setImageSize("");
+
+    try {
+      setIsLoading(true);
+      const res = await axios.post("/api/generateImage", {
+        prompt,
+        size,
+      });
+
+      setIsLoading(false);
+
+      setImageUrl(res.data.image);
+      setImageSize(res.data.size);
+      setPrompt("");
+      setSize("small");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -24,6 +55,14 @@ export default function Home() {
         </div>
       </nav>
       <main className='w-full'>
+        <div className='flex justify-center mt-10'>
+          <p className='p-2 font-bold text-lg'>
+            <span className='bg-text-purple px-2 py-1 rounded-lg'>
+              Generate
+            </span>{" "}
+            realistic images and art from a description in natural language.
+          </p>
+        </div>
         <div className='mt-10 flex justify-center'>
           <form>
             <div className='h-10 flex items-center'>
@@ -47,21 +86,62 @@ export default function Home() {
 
             <div className='flex items-center justify-end space-x-4 font-bold mt-4 mr-2'>
               <button
+                disabled={!imageUrl}
                 onClick={onClear}
-                className='border border-black px-3 py-2 bg-transparent text-sm transition-colors duration-200 shadow-solid-primary'
+                className='border border-black px-3 py-2 bg-transparent text-sm transition-colors duration-200 shadow-solid-primary disabled:bg-gray-300'
               >
                 CLEAR
               </button>
               <button
+                disabled={!prompt || !size}
                 type='submit'
                 onClick={onGenerate}
-                className='border border-black px-3 py-2 bg-text-purple hover:bg-text-purple/90 text-sm transition-colors duration-200 shadow-solid-primary'
+                className='border border-black px-3 py-2 bg-text-purple hover:bg-text-purple/90 text-sm transition-colors duration-200 shadow-solid-primary disabled:bg-gray-300'
               >
                 GENERATE
               </button>
             </div>
           </form>
         </div>
+
+        <div className='w-full flex justify-center mt-10'>
+          {imageUrl && imageSize ? (
+            <div className='relative'>
+              <Image
+                src={imageUrl}
+                alt='generated image'
+                width={
+                  imageSize === "small"
+                    ? 256
+                    : imageSize === "medium"
+                    ? 512
+                    : 1024
+                }
+                height={
+                  imageSize === "small"
+                    ? 256
+                    : imageSize === "medium"
+                    ? 512
+                    : 1024
+                }
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {isLoading ? (
+          <div className='fixed top-0 right-0 bottom-0 left-0 flex flex-col items-center justify-center bg-black/50'>
+            <Triangle
+              height='80'
+              width='80'
+              color='#A66EFE'
+              ariaLabel='triangle-loading'
+              wrapperStyle={{}}
+              visible={true}
+            />
+            <p className='text-white text-xs mt-4'>Generating your image...</p>
+          </div>
+        ) : null}
       </main>
     </div>
   );

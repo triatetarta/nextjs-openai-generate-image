@@ -26,7 +26,7 @@ export default async function handler(
 
         const imageUrl = response.data.data[0].url;
 
-        res.status(200).json({ success: true, data: imageUrl });
+        res.status(200).json({ success: true, image: imageUrl, size });
         break;
       default:
         res.status(405).end();
