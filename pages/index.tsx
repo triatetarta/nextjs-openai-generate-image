@@ -9,6 +9,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [imageSize, setImageSize] = useState("");
+  const [error, setError] = useState("");
 
   const onClear = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -41,7 +42,9 @@ export default function Home() {
       setPrompt("");
       setSize("small");
     } catch (error) {
-      console.log(error);
+      if (error instanceof Error) {
+        setError(error.message);
+      }
     }
   };
 
@@ -56,7 +59,7 @@ export default function Home() {
       </nav>
       <main className='w-full'>
         <div className='flex justify-center mt-10'>
-          <p className='p-2 font-bold text-lg'>
+          <p className='p-2 font-bold text-sm sm:text-lg text-center'>
             <span className='bg-text-purple px-2 py-1 rounded-lg'>
               Generate
             </span>{" "}
@@ -65,18 +68,18 @@ export default function Home() {
         </div>
         <div className='mt-10 flex justify-center'>
           <form>
-            <div className='h-10 flex items-center'>
+            <div className='h-10 flex items-center w-96 max-w-[310px]'>
               <input
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className='rounded-l-full border-t-2 border-b-2 border-l-2 border-black px-3 py-2 h-full w-96 max-w-[320px] text-sm focus:outline-none'
+                className='rounded-l-full border-t-2 border-b-2 border-l-2 border-black px-3 py-2 h-full  text-sm focus:outline-none flex-grow-1 flex-1'
                 type='text'
                 placeholder='Enter a prompt'
               />
               <select
                 value={size}
                 onChange={(e) => setSize(e.target.value)}
-                className='border-2 border-black px-3 py-2 font-medium text-sm focus:outline-none rounded-r-full h-full cursor-pointer'
+                className='border-2 border-black px-3 py-2 font-medium text-sm focus:outline-none rounded-r-full h-full cursor-pointer flex-grow-0'
               >
                 <option value='small'>small</option>
                 <option value='medium'>medium</option>
@@ -102,6 +105,10 @@ export default function Home() {
               </button>
             </div>
           </form>
+        </div>
+
+        <div className='w-full flex justify-center mt-10'>
+          {error ? <p className='bg-red-500 text-white p-4'>{error}</p> : null}
         </div>
 
         <div className='w-full flex justify-center mt-10'>
